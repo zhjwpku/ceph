@@ -358,7 +358,7 @@ struct entity_addr_t {
   // broader study
 
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features = 0) const {
     ::encode(type, bl);
     ::encode(nonce, bl);
 #if defined(__linux__) || defined(DARWIN) || defined(__FreeBSD__)
@@ -390,7 +390,7 @@ struct entity_addr_t {
 
   static void generate_test_instances(list<entity_addr_t*>& o);
 };
-WRITE_CLASS_ENCODER(entity_addr_t)
+WRITE_CLASS_ENCODER_OPTIONAL_FEATURES(entity_addr_t)
 
 inline ostream& operator<<(ostream& out, const entity_addr_t &addr)
 {
@@ -432,16 +432,17 @@ struct entity_inst_t {
     return i;
   }
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features = 0) const {
     ::encode(name, bl);
-    ::encode(addr, bl);
+    ::encode(addr, bl, features);
   }
   void decode(bufferlist::iterator& bl) {
     ::decode(name, bl);
     ::decode(addr, bl);
   }
+  static void generate_test_instances(list<entity_inst_t*>& o);
 };
-WRITE_CLASS_ENCODER(entity_inst_t)
+WRITE_CLASS_ENCODER_OPTIONAL_FEATURES(entity_inst_t)
 
 
 inline bool operator==(const entity_inst_t& a, const entity_inst_t& b) { 
