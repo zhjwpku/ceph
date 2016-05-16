@@ -12,7 +12,6 @@
  *
  */
 
-
 #include <errno.h>
 #include "include/types.h"
 #include "ceph_ver.h"
@@ -159,7 +158,7 @@ public:
     : DencoderBase<T>(stray_ok, nondeterministic) {}
   virtual void encode(bufferlist& out, uint64_t features) {
     out.clear();
-    this->m_object->encode(out);
+    this->m_object->encode(out, features);   // badly doubt about this
   }
 };
 

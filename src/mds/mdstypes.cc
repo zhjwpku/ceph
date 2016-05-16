@@ -7,7 +7,6 @@
 const mds_gid_t MDS_GID_NONE = mds_gid_t(0);
 const mds_rank_t MDS_RANK_NONE = mds_rank_t(-1);
 
-
 /*
  * frag_info_t
  */
@@ -669,10 +668,10 @@ void old_rstat_t::generate_test_instances(list<old_rstat_t*>& ls)
 /*
  * session_info_t
  */
-void session_info_t::encode(bufferlist& bl) const
+void session_info_t::encode(bufferlist& bl, uint64_t features) const
 {
   ENCODE_START(6, 3, bl);
-  ::encode(inst, bl);
+  ::encode(inst, bl, features);
   ::encode(completed_requests, bl);
   ::encode(prealloc_inos, bl);   // hacky, see below.
   ::encode(used_inos, bl);

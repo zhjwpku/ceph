@@ -16,7 +16,7 @@ struct cls_refcount_get_op {
 
   cls_refcount_get_op() : implicit_ref(false) {}
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features) const {
     ENCODE_START(1, 1, bl);
     ::encode(tag, bl);
     ::encode(implicit_ref, bl);
@@ -32,7 +32,7 @@ struct cls_refcount_get_op {
   void dump(ceph::Formatter *f) const;
   static void generate_test_instances(list<cls_refcount_get_op*>& ls);
 };
-WRITE_CLASS_ENCODER(cls_refcount_get_op)
+WRITE_CLASS_ENCODER_FEATURES(cls_refcount_get_op)
 
 struct cls_refcount_put_op {
   string tag;
@@ -41,7 +41,7 @@ struct cls_refcount_put_op {
 
   cls_refcount_put_op() : implicit_ref(false) {}
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features) const {
     ENCODE_START(1, 1, bl);
     ::encode(tag, bl);
     ::encode(implicit_ref, bl);
@@ -58,14 +58,14 @@ struct cls_refcount_put_op {
   void dump(ceph::Formatter *f) const;
   static void generate_test_instances(list<cls_refcount_put_op*>& ls);
 };
-WRITE_CLASS_ENCODER(cls_refcount_put_op)
+WRITE_CLASS_ENCODER_FEATURES(cls_refcount_put_op)
 
 struct cls_refcount_set_op {
   list<string> refs;
 
   cls_refcount_set_op() {}
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features) const {
     ENCODE_START(1, 1, bl);
     ::encode(refs, bl);
     ENCODE_FINISH(bl);
@@ -80,7 +80,7 @@ struct cls_refcount_set_op {
   void dump(ceph::Formatter *f) const;
   static void generate_test_instances(list<cls_refcount_set_op*>& ls);
 };
-WRITE_CLASS_ENCODER(cls_refcount_set_op)
+WRITE_CLASS_ENCODER_FEATURES(cls_refcount_set_op)
 
 struct cls_refcount_read_op {
   bool implicit_ref; // assume wildcard reference for
@@ -88,7 +88,7 @@ struct cls_refcount_read_op {
 
   cls_refcount_read_op() : implicit_ref(false) {}
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features) const {
     ENCODE_START(1, 1, bl);
     ::encode(implicit_ref, bl);
     ENCODE_FINISH(bl);
@@ -103,14 +103,14 @@ struct cls_refcount_read_op {
   void dump(ceph::Formatter *f) const;
   static void generate_test_instances(list<cls_refcount_read_op*>& ls);
 };
-WRITE_CLASS_ENCODER(cls_refcount_read_op)
+WRITE_CLASS_ENCODER_FEATURES(cls_refcount_read_op)
 
 struct cls_refcount_read_ret {
   list<string> refs;
 
   cls_refcount_read_ret() {}
 
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features) const {
     ENCODE_START(1, 1, bl);
     ::encode(refs, bl);
     ENCODE_FINISH(bl);
@@ -125,7 +125,6 @@ struct cls_refcount_read_ret {
   void dump(ceph::Formatter *f) const;
   static void generate_test_instances(list<cls_refcount_read_ret*>& ls);
 };
-WRITE_CLASS_ENCODER(cls_refcount_read_ret)
-
+WRITE_CLASS_ENCODER_FEATURES(cls_refcount_read_ret)
 
 #endif

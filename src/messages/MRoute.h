@@ -12,8 +12,6 @@
  * 
  */
 
-
-
 #ifndef CEPH_MROUTE_H
 #define CEPH_MROUTE_H
 
@@ -72,7 +70,7 @@ public:
   }
   void encode_payload(uint64_t features) {
     ::encode(session_mon_tid, payload);
-    ::encode(dest, payload);
+    ::encode(dest, payload, features);
     bool m = msg ? true : false;
     ::encode(m, payload);
     if (msg)

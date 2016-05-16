@@ -222,7 +222,7 @@ static int cls_rc_refcount_read(cls_method_context_t hctx, bufferlist *in, buffe
     read_ret.refs.push_back(iter->first);
   }
 
-  ::encode(read_ret, *out);
+  ::encode(read_ret, *out, 0);
 
   return 0;
 }

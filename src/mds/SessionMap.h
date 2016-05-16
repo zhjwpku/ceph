@@ -634,5 +634,4 @@ public:
                      MDSGatherBuilder *gather_bld);
 };
 
-
 #endif

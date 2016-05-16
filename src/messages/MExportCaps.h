@@ -12,12 +12,10 @@
  * 
  */
 
-
 #ifndef CEPH_MEXPORTCAPS_H
 #define CEPH_MEXPORTCAPS_H
 
 #include "msg/Message.h"
-
 
 class MExportCaps : public Message {
  public:  
@@ -39,7 +37,7 @@ public:
   void encode_payload(uint64_t features) {
     ::encode(ino, payload);
     ::encode(cap_bl, payload);
-    ::encode(client_map, payload);
+    ::encode(client_map, payload, features);
   }
   void decode_payload() {
     bufferlist::iterator p = payload.begin();

@@ -88,7 +88,7 @@ struct cls_replica_log_get_bounds_ret {
     const std::list<cls_replica_log_progress_marker>& m) :
     position_marker(pos_marker), oldest_time(time), markers(m)
   {}
-  void encode(bufferlist& bl) const {
+  void encode(bufferlist& bl, uint64_t features) const {
     ENCODE_START(1, 1, bl);
     ::encode(position_marker, bl);
     ::encode(oldest_time, bl);
@@ -107,6 +107,6 @@ struct cls_replica_log_get_bounds_ret {
   void dump(Formatter *f) const;
   static void generate_test_instances(std::list<cls_replica_log_get_bounds_ret*>& ls);
 };
-WRITE_CLASS_ENCODER(cls_replica_log_get_bounds_ret)
+WRITE_CLASS_ENCODER_FEATURES(cls_replica_log_get_bounds_ret)
 
 #endif /* CLS_REPLICA_LOG_OPS_H_ */

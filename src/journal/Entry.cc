@@ -19,7 +19,7 @@ const uint32_t HEADER_FIXED_SIZE = 25; /// preamble, version, entry tid, tag id
 
 } // anonymous namespace
 
-void Entry::encode(bufferlist &bl) const {
+void Entry::encode(bufferlist &bl, uint64_t features) const {
   bufferlist data_bl;
   ::encode(preamble, data_bl);
   ::encode(static_cast<uint8_t>(1), data_bl);

@@ -34,7 +34,7 @@ public:
     return m_data;
   }
 
-  void encode(bufferlist &bl) const;
+  void encode(bufferlist &bl, uint64_t features) const;
   void decode(bufferlist::iterator &iter);
   void dump(ceph::Formatter *f) const;
 
@@ -57,6 +57,6 @@ std::ostream &operator<<(std::ostream &os, const Entry &entry);
 
 using journal::operator<<;
 
-WRITE_CLASS_ENCODER(journal::Entry)
+WRITE_CLASS_ENCODER_FEATURES(journal::Entry)
 
 #endif // CEPH_JOURNAL_ENTRY_H

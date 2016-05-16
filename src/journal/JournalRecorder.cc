@@ -86,7 +86,7 @@ Future JournalRecorder::append(uint64_t tag_tid,
 
   bufferlist entry_bl;
   ::encode(Entry(future->get_tag_tid(), future->get_entry_tid(), payload_bl),
-           entry_bl);
+           entry_bl, 0);
 
   AppendBuffers append_buffers;
   append_buffers.push_back(std::make_pair(future, entry_bl));

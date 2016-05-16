@@ -132,7 +132,7 @@ static int cls_replica_log_get(cls_method_context_t hctx,
   ret.position_marker = bound.get_lowest_marker_bound();
   bound.get_markers(ret.markers);
 
-  ::encode(ret, *out);
+  ::encode(ret, *out, 0);
   return 0;
 }
 
