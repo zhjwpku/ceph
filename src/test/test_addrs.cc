@@ -47,15 +47,12 @@ const char *addr_checks[][3] = {
   { NULL, NULL, NULL },
 };
 
-
 TEST(Msgr, TestAddrParsing)
 {
-
   for (unsigned i = 0; addr_checks[i][0]; ++i) {
     entity_addr_t a;
     const char *end = "";
     bool ok = a.parse(addr_checks[i][0], &end);
-    string in = addr_checks[i][0];
     string out;
     if (ok) {
       stringstream ss;
@@ -69,4 +66,136 @@ TEST(Msgr, TestAddrParsing)
     ASSERT_EQ(out, addr_checks[i][1]);
     ASSERT_EQ(left, addr_checks[i][2]);
   }
+}
+
+TEST(Msgr, TestAddrEncodeAddrvecDecode)
+{
+  for (unsigned i = 0; addr_checks[i][0]; ++i) {
+    entity_addr_t addr;
+    entity_addrvec_t addrvec;
+    bufferlist::iterator bli;
+    const char *end = "";
+    bool ok = addr.parse(addr_checks[i][0], &end);
+    bufferlist bl;
+    if (ok) {
+      cout << "Test1 addr: " << addr << endl;
+      addr.encode(bl, 0);
+      bli = bl.begin();
+      addrvec.decode(bli);
+      cout << "Test1 addrvec.v[0]: " << addrvec.v[0] << endl;
+      ASSERT_EQ(addr, addrvec.v[0]);
+    }
+  }
+}
+
+TEST(Msgr, TestAddrvec0EncodeAddrDecode)
+{
+  for (unsigned i = 0; addr_checks[i][0]; ++i) {
+    entity_addr_t addr;
+    entity_addrvec_t addrvec;
+    bufferlist bl;
+    bufferlist::iterator bli;
+    const char *end = "";
+    bool ok = addr.parse(addr_checks[i][0], &end);
+    if (ok) {
+      addrvec.v.push_back(addr);
+      addrvec.encode(bl, 0);
+      bli = bl.begin();
+      entity_addr_t a;
+      a.decode(bli);
+      ASSERT_EQ(addr, a);
+    }
+  }
+}
+
+TEST(Msgr, TestEmptyAddrvecEncodeAddrDecode)
+{
+  entity_addrvec_t addrvec;
+  entity_addr_t addr;
+  bufferlist bl;
+  bufferlist::iterator bli;
+  addrvec.encode(bl, 0);
+  bli = bl.begin();
+  addr.decode(bli);
+  ASSERT_EQ(addr, entity_addr_t());
+}
+
+const char *addrvec_checks[][3] = {
+  { "legacy:1.2.3.4", "legacy:1.2.3.4", "msgr2:1.2.3.4" },
+  { "msgr2:1.2.3.5", "legacy:1.2.3.5", "msgr2:1.2.3.5" },
+  { "msgr2:1.2.3.6", "legacy:1.2.3.6", "msgr2:1.2.3.6" },
+  { "msgr2:1.2.3.7", "legacy:1.2.3.7", "msgr2:1.2.3.7" },
+  { NULL, NULL, NULL },
+};
+
+/* multiple addrs where one is legacy and others are not */
+TEST(Msgr, TestAddrvecEncodeAddrDecode0)
+{
+  entity_addr_t addr;
+  entity_addrvec_t addrvec;
+  bufferlist bl;
+  bufferlist::iterator bli;
+  
+  for (unsigned i = 0; addrvec_checks[i][0]; ++i) {
+    const char *end = "";
+    bool ok = addr.parse(addrvec_checks[i][0], &end);
+    if (ok) {
+      addrvec.v.push_back(addr);
+    }
+  }
+
+  addrvec.encode(bl, 0);
+  bli = bl.begin();
+  
+  addr.decode(bli);
+
+  ASSERT_EQ(addr, addrvec.v[0]);
+}
+
+/* multiple legacy addrs */
+TEST(Msgr, TestAddrvecEncodeAddrDecode1)
+{
+  entity_addr_t addr;
+  entity_addrvec_t addrvec;
+  bufferlist bl;
+  bufferlist::iterator bli;
+  
+  for (unsigned i = 0; addrvec_checks[i][1]; ++i) {
+    const char *end = "";
+    bool ok = addr.parse(addrvec_checks[i][1], &end);
+    if (ok) {
+      addrvec.v.push_back(addr);
+    }
+  }
+
+  addrvec.encode(bl, 0);
+  bli = bl.begin();
+  
+  addr.decode(bli);
+
+  ASSERT_EQ(addr, addrvec.v[0]);
+}
+
+/* all non-legacy addrs */
+TEST(Msgr, TestAddrvecEncodeAddrDecode2)
+{
+  entity_addr_t addr;
+  entity_addrvec_t addrvec;
+  bufferlist bl;
+  bufferlist::iterator bli;
+  
+  for (unsigned i = 0; addrvec_checks[i][2]; ++i) {
+    const char *end = "";
+    bool ok = addr.parse(addrvec_checks[i][2], &end);
+    if (ok) {
+      addrvec.v.push_back(addr);
+    }
+  }
+
+  addrvec.encode(bl, 0);
+  bli = bl.begin();
+  
+  addr.decode(bli);
+
+  ASSERT_EQ(addr, addrvec.v[0]);
 }
