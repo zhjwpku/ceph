@@ -50,7 +50,6 @@ static ostream& _prefix(std::ostream *_dout, WorkerPool *p) {
 }
 
 
-
 /*******************
  * Processor
  */

@@ -37,6 +37,8 @@ using namespace std;
 
 class AsyncMessenger;
 
+#define MSGRv2 1
+
 static const int ASYNC_IOV_MAX = (IOV_MAX >= 1024 ? IOV_MAX / 4 : IOV_MAX);
 
 /*
@@ -57,13 +59,19 @@ class AsyncConnection : public Connection {
     outcoming_bl.claim_append(bl);
     return _try_send(more);
   }
-  // if "send" is false, it will only append bl to send buffer
+  // if "more" is false, it will only append bl to send buffer
   // the main usage is avoid error happen outside messenger threads
   ssize_t _try_send(bool more=false);
   ssize_t _send(Message *m);
   void prepare_send_message(uint64_t features, Message *m, bufferlist &bl);
   ssize_t read_until(unsigned needed, char *p);
   ssize_t _process_connection();
+#if MSGRv2
+  ssize_t read_stream_id_and_frame_len(__u32 &stream_id, __u32 &frame_len);
+  ssize_t read_stream_id_and_frame_len_and_tag(__u32 &stream_id,
+                                               __u32 &frame_len,
+	                                       char &tag);
+#endif
   void _connect();
   void _stop();
   int handle_connect_reply(ceph_msg_connect &connect, ceph_msg_connect_reply &r);
@@ -81,11 +89,25 @@ class AsyncConnection : public Connection {
   ssize_t _reply_accept(char tag, ceph_msg_connect &connect, ceph_msg_connect_reply &reply,
                     bufferlist &authorizer_reply) {
     bufferlist reply_bl;
+    __u32 _frame_len;
+#if MSGRv2
+    reply_bl.append((char*)&stream_id, sizeof(stream_id));
+    _frame_len = sizeof(char) + sizeof(reply);
+    reply_bl.append((char*)&_frame_len, sizeof(_frame_len));
+    reply_bl.append(tag);
+#endif
     reply.tag = tag;
     reply.features = ((uint64_t)connect.features & policy.features_supported) | policy.features_required;
     reply.authorizer_len = authorizer_reply.length();
     reply_bl.append((char*)&reply, sizeof(reply));
+
     if (reply.authorizer_len) {
+#if MSGRv2
+      reply_bl.append((char*)&stream_id, sizeof(stream_id));
+      _frame_len = sizeof(char) + authorizer_reply.length();
+      reply_bl.append((char*)&_frame_len, sizeof(_frame_len));
+      reply_bl.append(CEPH_MSGR_TAG_AUTH);
+#endif
       reply_bl.append(authorizer_reply.c_str(), authorizer_reply.length());
     }
     ssize_t r = try_send(reply_bl);
@@ -225,6 +247,7 @@ class AsyncConnection : public Connection {
     STATE_CONNECTING,
     STATE_CONNECTING_RE,
     STATE_CONNECTING_WAIT_BANNER_AND_IDENTIFY,
+    STATE_CONNECTING_WAIT_AUTH_METHODS,
     STATE_CONNECTING_SEND_CONNECT_MSG,
     STATE_CONNECTING_WAIT_CONNECT_REPLY,
     STATE_CONNECTING_WAIT_CONNECT_REPLY_AUTH,
@@ -232,6 +255,7 @@ class AsyncConnection : public Connection {
     STATE_CONNECTING_READY,
     STATE_ACCEPTING,
     STATE_ACCEPTING_WAIT_BANNER_ADDR,
+    STATE_ACCEPTING_WAIT_AUTH_SET_METHOD,
     STATE_ACCEPTING_WAIT_CONNECT_MSG,
     STATE_ACCEPTING_WAIT_CONNECT_MSG_AUTH,
     STATE_ACCEPTING_WAIT_SEQ,
@@ -262,6 +286,7 @@ class AsyncConnection : public Connection {
                                         "STATE_CONNECTING",
                                         "STATE_CONNECTING_RE",
                                         "STATE_CONNECTING_WAIT_BANNER_AND_IDENTIFY",
+					"STATE_CONNECTING_AUTH_METHODS",
                                         "STATE_CONNECTING_SEND_CONNECT_MSG",
                                         "STATE_CONNECTING_WAIT_CONNECT_REPLY",
                                         "STATE_CONNECTING_WAIT_CONNECT_REPLY_AUTH",
@@ -269,6 +294,7 @@ class AsyncConnection : public Connection {
                                         "STATE_CONNECTING_READY",
                                         "STATE_ACCEPTING",
                                         "STATE_ACCEPTING_WAIT_BANNER_ADDR",
+					"STATE_ACCEPTING_WAIT_AUTH_SET_METHOD",
                                         "STATE_ACCEPTING_WAIT_CONNECT_MSG",
                                         "STATE_ACCEPTING_WAIT_CONNECT_MSG_AUTH",
                                         "STATE_ACCEPTING_WAIT_SEQ",
@@ -280,6 +306,12 @@ class AsyncConnection : public Connection {
   }
 
   AsyncMessenger *async_msgr;
+#if MSGRv2
+  __u32 stream_id;
+  __u32 auth_method;
+  char msgr2_banner[CEPH_MSGR2_BANNER_LEN+1];
+  __u64 protocol_features_supported, protocol_features_required;
+#endif
   uint64_t conn_id;
   PerfCounters *logger;
   int global_seq;

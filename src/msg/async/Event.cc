@@ -138,7 +138,6 @@ EventCenter::~EventCenter()
   delete notify_handler;
 }
 
-
 void EventCenter::set_owner()
 {
   thread_id = owner = pthread_self();

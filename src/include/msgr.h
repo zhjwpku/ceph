@@ -26,6 +26,7 @@
 #define CEPH_BANNER "ceph v027"
 #define CEPH_BANNER_MAX_LEN 30
 
+#define CEPH_MSGR2_BANNER_LEN 38
 
 /*
  * Rollover-safe type and comparator for 32-bit sequence numbers.
@@ -74,25 +75,39 @@ struct ceph_entity_inst {
 
 
 /* used by message exchange protocol */
-#define CEPH_MSGR_TAG_READY         1  /* server->client: ready for messages */
-#define CEPH_MSGR_TAG_RESETSESSION  2  /* server->client: reset, try again */
-#define CEPH_MSGR_TAG_WAIT          3  /* server->client: wait for racing
-					  incoming connection */
-#define CEPH_MSGR_TAG_RETRY_SESSION 4  /* server->client + cseq: try again
-					  with higher cseq */
-#define CEPH_MSGR_TAG_RETRY_GLOBAL  5  /* server->client + gseq: try again
-					  with higher gseq */
-#define CEPH_MSGR_TAG_CLOSE         6  /* closing pipe */
-#define CEPH_MSGR_TAG_MSG           7  /* message */
-#define CEPH_MSGR_TAG_ACK           8  /* message ack */
-#define CEPH_MSGR_TAG_KEEPALIVE     9  /* just a keepalive byte! */
-#define CEPH_MSGR_TAG_BADPROTOVER  10  /* bad protocol version */
-#define CEPH_MSGR_TAG_BADAUTHORIZER 11 /* bad authorizer */
-#define CEPH_MSGR_TAG_FEATURES      12 /* insufficient features */
-#define CEPH_MSGR_TAG_SEQ           13 /* 64-bit int follows with seen seq number */
-#define CEPH_MSGR_TAG_KEEPALIVE2     14
-#define CEPH_MSGR_TAG_KEEPALIVE2_ACK 15  /* keepalive reply */
+#define CEPH_MSGR_TAG_READY           1  /* server->client: ready for messages */
+#define CEPH_MSGR_TAG_RESETSESSION    2  /* server->client: reset, try again */
+#define CEPH_MSGR_TAG_WAIT            3  /* server->client: wait for racing
+                                            incoming connection */
+#define CEPH_MSGR_TAG_RETRY_SESSION   4  /* server->client + cseq: try again
+					    with higher cseq */
+#define CEPH_MSGR_TAG_RETRY_GLOBAL    5  /* server->client + gseq: try again
+				            with higher gseq */
+#define CEPH_MSGR_TAG_CLOSE           6  /* closing pipe */
+#define CEPH_MSGR_TAG_MSG             7  /* message */
+#define CEPH_MSGR_TAG_ACK             8  /* message ack */
+#define CEPH_MSGR_TAG_KEEPALIVE       9  /* just a keepalive byte! */
+#define CEPH_MSGR_TAG_BADPROTOVER     10 /* bad protocol version */
+#define CEPH_MSGR_TAG_BADAUTHORIZER   11 /* bad authorizer */
+#define CEPH_MSGR_TAG_FEATURES        12 /* insufficient features */
+#define CEPH_MSGR_TAG_SEQ             13 /* 64-bit int follows with seen seq number */
+#define CEPH_MSGR_TAG_KEEPALIVE2      14
+#define CEPH_MSGR_TAG_KEEPALIVE2_ACK  15 /* keepalive reply */
+#define CEPH_MSGR_TAG_AUTH_METHODS    16 /* list authentication methods (non, cephx, ...)*/
+#define CEPH_MSGR_TAG_AUTH_SET_METHOD 17 /* set auth method for this connection */
+#define CEPH_MSGR_TAG_AUTH_BAD_METHOD 18
+#define CEPH_MSGR_TAG_AUTH            19 /* */
+#define CEPH_MSGR_TAG_AUTH_DONE       20
+#define CEPH_MSGR_TAG_CONN_MSG        21 /* */
+#define CEPH_MSGR_TAG_CONN_REPLY      22
 
+
+/*
+ * ceph authentication methods
+ */
+#define CEPH_AUTH_METHOD_NONE        0
+#define CEPH_AUTH_METHOD_CEPHX       1
+#define CEPH_AUTH_METHOD_NUM         2
 
 /*
  * connection negotiation
@@ -161,6 +176,22 @@ struct ceph_msg_header {
 	__le16 compat_version;
 	__le16 reserved;
 	__le32 crc;       /* header crc32c */
+} __attribute__ ((packed));
+
+struct ceph_msg_header2 {
+	__le64 seq;       /* message seq# for this session */
+	__le64 tid;       /* transaction id */
+	__le64 ack_seq;   /* message ack seq id for this session */
+	__le16 type;      /* message type */
+	__le16 priority;  /* priority.  higher value == higher priority */
+	__le16 version;   /* version of message encoding */
+	__le16 compat_version; /* oldest code we think can decode this. unknow if zero. */
+	__le32 front_len; /* bytes in main payload */
+	__le32 data_len;  /* bytes of data payload */
+	__le16 data_off;  /* sender: include full offset;
+			     receiver: mask against ~PAGE_MASK */
+	__le16 flags;
+	__le32 header_crc, front_crc, data_crc;
 } __attribute__ ((packed));
 
 #define CEPH_MSG_PRIO_LOW     64
