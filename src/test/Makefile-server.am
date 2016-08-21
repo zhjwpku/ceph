@@ -8,6 +8,11 @@ ceph_test_msgr_LDADD = $(LIBOS) $(UNITTEST_LDADD) $(CEPH_GLOBAL)
 ceph_test_msgr_CXXFLAGS = $(UNITTEST_CXXFLAGS)
 bin_DEBUGPROGRAMS += ceph_test_msgr
 
+ceph_test_msgrv2_SOURCES = test/msgr/test_msgrv2.cc
+ceph_test_msgrv2_LDADD = $(LIBOS) $(UNITTEST_LDADD) $(CEPH_GLOBAL)
+ceph_test_msgrv2_CXXFLAGS = $(UNITTEST_CXXFLAGS)
+bin_DEBUGPROGRAMS += ceph_test_msgrv2
+
 ceph_test_trans_SOURCES = test/test_trans.cc
 ceph_test_trans_LDADD = $(LIBOS) $(CEPH_GLOBAL)
 bin_DEBUGPROGRAMS += ceph_test_trans
